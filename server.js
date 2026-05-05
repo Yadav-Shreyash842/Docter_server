@@ -12,14 +12,30 @@ connectDB();
 
 const app = express();
 
-// Middleware
+// Middleware - Allow all Vercel preview + production URLs
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://docter-client-orpin.vercel.app',
+  'https://docter-client-git-main-shreyash-yadavs-projects-f3e24450.vercel.app',
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://docter-client-orpin.vercel.app',
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    // Allow any vercel.app subdomain dynamically
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
